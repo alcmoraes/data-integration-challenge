@@ -1,0 +1,18 @@
+version: '3'
+services:
+  mongo:
+    container_name: mongo
+    image: mongo:3.4
+    ports:
+      - 27017:27017
+  api:
+    container_name: api
+    volumes:
+      - .:/var/www
+    links:
+      - mongo
+    build: .
+    ports:
+      - 3005:3005
+      - 8081:8081
+      - 8082:8082
