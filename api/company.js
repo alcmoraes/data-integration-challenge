@@ -21,14 +21,76 @@ module.exports = ( server ) => {
     return new Promise( ( resolve, reject ) => {
         /**
          * @swagger
+         * models:
+         *   Company:
+         *     id: Company
+         *     type: object
+         *     properties:
+         *       name:
+         *         type: String
+         *       zip:
+         *         type: String
+         *       website:
+         *         type: String
+         *     required:
+         *       - name
+         *     example:
+         *       name: "Fakeblock"
+         *       zip: "90776"
+         *       website: "https://fakeblock.com.br"
+         */
+
+        /**
+          * @swagger
+          * definitions:
+          *   uploadResponse:
+          *     type: "object"
+          *     description: "Upload Object Response"
+          *     properties:
+          *       status:
+          *         type: String
+          *         description: "OK or ERROR"
+          *         default: "OK"
+          *       message:
+          *         type: String
+          *         description: "A descriptive message of the action taken"
+          *         default: "Uploaded successfully!"
+          *   Company:
+          *     properties:
+          *       id:
+          *         type: String
+          *         readOnly: true
+          *       name:
+          *         type: String
+          *       zip:
+          *         type: String
+          *       website:
+          *         type: String
+          *     required:
+          *       - name
+          *       - zip
+          *       - website
+          */
+
+        /**
+         * @swagger
          * path: /companies/upload
          * operations:
          *   -  httpMethod: POST
-         *      summary: Accepts a CSV input
+         *      summary: Upload companies CSV
+         *      notes: It uses the companies from the CSV to merge matching companies on the database
+         *      operationId: "upload_companies"
          *      responseClass: String
          *      nickname: upload_companies
+         *      produces:
+         *        - "application/json"
          *      consumes:
          *        - multipart/form-data
+         *      responses:
+         *        200:
+         *          description: "SUCCESS. The request has been fulfilled and resulted in response."
+         *          schema:
+         *            $ref: "#/definitions/uploadResponse"
          *      parameters:
          *        - name: file
          *          in: formData
@@ -77,6 +139,44 @@ module.exports = ( server ) => {
             catch( ERR ){
                 return res.send( ERR );
             }
+        } );
+
+        /**
+         * @swagger
+         * path: /companies
+         * operations:
+         *   -  httpMethod: POST
+         *      summary: Merge company
+         *      notes: It uses `name` and `zip` parameter to find a matching company in the database and merge the `website` data in it
+         *      operationId: "create_company"
+         *      responseClass: String
+         *      nickname: create_company
+         *      produces:
+         *        - application/json
+         *      consumes:
+         *        - application/json
+         *      responses:
+         *        200:
+         *          description: "Success"
+         *          schema:
+         *            $ref: "#/definitions/uploadResponse"
+         *      parameters:
+         *        - name: company
+         *          in: formData
+         *          description: The company object to merge
+         *          required: true
+         *          paramType: body
+         *          type: Company
+         *          schema:
+         *            $ref: "#/definitions/Company"
+        */
+        server.post( {
+            name: 'create_company',
+            path: '/companies/upload',
+            version: '1.0.0',
+        },
+        async ( req, res, next ) => {
+            
         } );
 
         resolve( server );
