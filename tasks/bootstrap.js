@@ -20,7 +20,7 @@ let bootstrap = () => {
 
 bootstrap()
     .then( () => {
-        process.exit( 2 );
+        process.exit( 0 );
     } )
     .catch( ( err ) => {
         console.log( err );

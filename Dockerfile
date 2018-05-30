@@ -6,9 +6,11 @@ RUN mkdir -p /var/www
 
 WORKDIR /var/www
 
-VOLUME /var/www
+COPY . .
 
 COPY docker/run.sh /tmp/run.sh
+
+RUN yarn
 
 RUN chmod +x /tmp/run.sh
 

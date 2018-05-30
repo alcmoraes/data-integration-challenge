@@ -1,16 +1,18 @@
 version: '3'
 services:
-  mongo:
-    container_name: mongo
+  yawoen_mongo:
+    container_name: yawoen_mongo
     image: mongo:3.4
     ports:
       - 27017:27017
-  api:
-    container_name: api
+  yawoen_api:
+    container_name: yawoen_api
+    environment:
+      - "DEBUG=API:*"
     volumes:
       - .:/var/www
     links:
-      - mongo
+      - yawoen_mongo
     build: .
     ports:
       - 3005:3005

@@ -1,10 +1,17 @@
 #Challenge Makefile
 
 start:
-#TODO: commands necessary to start the API
+	docker-compose up -d
+	@echo "Api running on port 3005"
+
+stop:
+	docker-compose stop
+
+logs:
+	docker-compose logs -f
 
 check:
 #TODO: include command to test the code and show the results
 
-#setup:
-#if needed to setup the enviroment before starting it
+setup:
+	./scripts/setup.sh

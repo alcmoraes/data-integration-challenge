@@ -66,8 +66,12 @@ module.exports = ( server ) => {
                             let c;
                             try{
                                 if( !csvCompanies.length ) return res.send( { status: 'OK', message: 'Uploaded successfully!' } );
-                                c = new server.DB.models.Company( csvCompanies.shift() );
-                                await c.save();
+                                c = csvCompanies.shift();
+                                let company = await server.DB.models.Company.findOneAndUpdate( {
+                                    name: { $regex: `^${c.name}\s?.*`, $options : 'i' },
+                                    zip: c.zip,
+                                },
+                                { $set: { website: c.website } } );
                                 return storeNextCompany();
                             }
                             catch( ERR ){
