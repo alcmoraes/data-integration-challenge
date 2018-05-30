@@ -6,25 +6,23 @@ const mongoose = require( 'mongoose' );
  * Database service
  * @return {Promise} The database
  */
-module.exports = () => {
-    return new Promise( async ( resolve, reject ) => {
-        try{
-            let db;
-            let models = {};
+module.exports = new Promise( async ( resolve, reject ) => {
+    try{
+        let db;
+        let models = {};
 
-            mongoose.connect( config.get( 'database' ) );
+        mongoose.connect( config.get( 'database' ) );
 
-            db = mongoose.connection;
-            db.on( 'error', console.error.bind( console, 'connection error:' ) );
+        db = mongoose.connection;
+        db.on( 'error', console.error.bind( console, 'connection error:' ) );
 
-            db.once( 'open', function(){
-                models[ 'Company' ] = mongoose.model( 'Company', require( '../schemas/company' )() );
-                return resolve( { models, db } );
-            } );
-        }
-        catch( ERR ){
-            debug( ERR );
-            reject( ERR );
-        }
-    } );
-};
+        db.once( 'open', function(){
+            models[ 'Company' ] = mongoose.model( 'Company', require( '../schemas/company' )() );
+            return resolve( { models, db } );
+        } );
+    }
+    catch( ERR ){
+        debug( ERR );
+        reject( ERR );
+    }
+} );

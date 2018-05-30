@@ -16,14 +16,14 @@ then
   echo "Done!"
 fi
 # Building compose
-echo "Turning compose on"
+echo "Turning compose on..."
 docker-compose up -d --build &> /dev/null
 echo "Done!"
 
-echo "Migrating initial data"
+echo "Migrating initial data..."
 docker exec yawoen_api bash -c "node tasks/bootstrap.js"
 echo "Done!"
 
-echo "Turning compose down"
+echo "Turning compose down..."
 docker-compose stop
 echo "Setup done!"

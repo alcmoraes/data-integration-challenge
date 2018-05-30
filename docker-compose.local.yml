@@ -9,9 +9,13 @@ services:
     container_name: yawoen_api
     environment:
       - "DEBUG=API:*"
+    volumes:
+      - .:/var/www
     links:
       - yawoen_mongo
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.local
     ports:
       - 3005:3005
       - 8081:8081

@@ -1,10 +1,6 @@
-const config = require( 'config' );
-const fs = require( 'fs' );
 const errors = require( 'restify-errors' );
 const debug = require( 'debug' )( 'API:COMPANY' );
-const parseCSV = require( 'csv-parse' );
 const Joi = require( 'joi' );
-const _ = require( 'lodash' );
 const utils = require( '../services/utils' );
 
 const schema = Joi.object().keys( {
@@ -25,7 +21,7 @@ module.exports = ( server ) => {
     return new Promise( ( resolve, reject ) => {
         /**
          * @swagger
-         * path: /company/upload
+         * path: /companies/upload
          * operations:
          *   -  httpMethod: POST
          *      summary: Accepts a CSV input
@@ -46,46 +42,39 @@ module.exports = ( server ) => {
             path: '/companies/upload',
             version: '1.0.0',
         },
-        ( req, res, next ) => {
+        async ( req, res, next ) => {
             let uploadedCSV;
             let company;
             try{
                 uploadedCSV = req.files.file;
-                fs.readFile( uploadedCSV.path, { encoding: 'utf-8' }, ( err, uploadedData ) =>{
-                    if( err ) throw new errors.InvalidContentError( err );
-                    parseCSV( uploadedData, { delimiter: ';' }, async ( err, csvCompanies ) => {
-                        if( err ) throw new errors.UnprocessableEntityError( err );
-                        csvCompanies = utils.formatCompaniesFromCSV( csvCompanies );
-                        /**
-                         * Picks the next company from the array
-                         * and store it into the database
-                         *
-                         * @return { void }
-                         */
-                        async function storeNextCompany(){
-                            let c;
-                            try{
-                                if( !csvCompanies.length ) return res.send( { status: 'OK', message: 'Uploaded successfully!' } );
-                                c = csvCompanies.shift();
-                                let company = await server.DB.models.Company.findOneAndUpdate( {
-                                    name: { $regex: `^${c.name}\s?.*`, $options : 'i' },
-                                    zip: c.zip,
-                                },
-                                { $set: { website: c.website } } );
-                                return storeNextCompany();
-                            }
-                            catch( ERR ){
-                                debug( ERR );
-                                throw new Error( ERR );
-                            }
-                        }
-
+                if( uploadedCSV.type !== 'text/csv' ) throw new errors.InvalidContentError( 'CSV files only' );
+                let uploadedData = await utils.readFile( uploadedCSV.path, { encoding: 'utf-8' } );
+                let csvCompanies = await utils.readCsv( uploadedData, { delimiter: ';' } );
+                if( !csvCompanies.length ) throw new errors.InvalidContentError( 'Invalid or empty CSV' );
+                csvCompanies = utils.formatCompaniesFromCSV( csvCompanies );
+                /**
+                 * Picks the next company from the array
+                 * and store it into the database
+                 *
+                 * @return { void }
+                 */
+                function storeNextCompany(){
+                    return new Promise( async ( resolve, reject ) => {
+                        let c;
+                        if( !csvCompanies.length ) return resolve( res.send( { status: 'OK', message: 'Uploaded successfully!' } ) );
+                        c = csvCompanies.shift();
+                        let company = await server.DB.models.Company.findOneAndUpdate( {
+                            name: { $regex: `^${c.name}\s?.*`, $options : 'i' },
+                            zip: c.zip,
+                        },
+                        { $set: { website: c.website } } );
                         return await storeNextCompany();
                     } );
-                } );
+                }
+
+                return await storeNextCompany();
             }
             catch( ERR ){
-                debug( ERR );
                 return res.send( ERR );
             }
         } );

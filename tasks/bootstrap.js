@@ -5,7 +5,7 @@ let bootstrap = () => {
         let mongoose;
         let collections;
         try{
-            mongoose = await require( '../services/database' )();
+            mongoose = await require( '../services/database' );
             collections = await mongoose.db.db.collections();
             for( let collection of collections ) await collection.remove();
             await require( './mock/companies' )( mongoose );
