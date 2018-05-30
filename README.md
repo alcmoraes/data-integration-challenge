@@ -6,7 +6,7 @@
 
 1. Docker
 2. Docker Compose
-3. Ports 3002, 8081 and 8082
+3. Ports 3005, 8081 and 8082
 
 ## Usage
 
