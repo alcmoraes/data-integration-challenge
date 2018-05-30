@@ -47,7 +47,7 @@ module.exports = new Promise( async ( resolve, reject ) => {
             basePath: 'http://localhost:3005/',
             info: {
                 version: '1.0',
-                title: 'API',
+                title: 'Data Integration Challenge',
                 description: 'API documentation',
             },
             apis: [
