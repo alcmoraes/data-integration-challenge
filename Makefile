@@ -20,9 +20,9 @@ logs: ## Show the logs for the running project
 check: ## Run project tests
 	@docker exec -it yawoen_api bash -c "yarn test"
 
-nyc: ## Runs the Coverage UI on port 8082
+nyc: ## Runs the Coverage UI on port 8081
 	@docker exec -it yawoen_api bash -c "yarn coverage"
-	@echo "API documentation running on port 8082"
+	@echo "Tests coverage running on port 8081"
 
 docs: ## Runs the Swagger Explorer UI on port 8082
 	@docker-compose up -d
