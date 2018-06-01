@@ -96,29 +96,19 @@ module.exports = class Importer {
             let data;
             try{
                 if( !file ) throw new Error( 'No file specified to read!' );
-                if( file !== this.options.file ){
-                    this.setOptions( { file: file } );
-                }
-                this.csvString = await fs.readFile( this.options.file, { encoding: 'utf-8' } );
-                data = CSV.parse( this.csvString );
+                if( file !== this.options.file ) this.setOptions( { file: file } );
+                data = CSV.parse( this.csvString = await fs.readFile( this.options.file, { encoding: 'utf-8' } ) );
                 if( !data.length || data[ 0 ][ 0 ] === '' ) throw new Error( 'Empty csv' );
-                
-                if( _.isEmpty( this.options.columns ) ){
-                    this.csvData = data;
-                    return resolve();
-                }
-
+                if( _.isEmpty( this.options.columns ) ) return resolve( this.csvData = data );
                 this.guessColumnPositions( data, this.options.columns, ( err, columnOrder ) => {
                     this.csvData = data.reduce( ( output, company ) => {
                         let c = {};
                         columnOrder.map( ( o, i ) => {
                             if( ( !company[ o.pos ] && o.required ) ||
-                                ( !company[ o.pos ].match( o.regex ) && o.required )
-                            ) return;
+                            ( !company[ o.pos ].match( o.regex ) && o.required ) ) return;
                             c[ o.name ] = company[ o.pos ];
                         } );
-                        return Object.keys( c ).length === columnOrder.length ?
-                            [ ...output, c ] : output;
+                        return Object.keys( c ).length === columnOrder.length ? [ ...output, c ] : output;
                     }, [] );
                     resolve();
                 } );
@@ -173,9 +163,9 @@ module.exports = class Importer {
     generateMongoFindConditions( company ){
         let conditions;
         conditions = {
+            zip: company.zip,
             name: { $regex: `^${company.name}\s?.*`, $options : 'i' },
         };
-        if( company.zip ) conditions[ 'zip' ] = company.zip;
         return conditions;
     }
 

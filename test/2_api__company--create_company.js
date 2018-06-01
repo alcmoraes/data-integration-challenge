@@ -1,11 +1,11 @@
 const request = require( 'supertest' );
 
-describe( 'POST /companies', () => {
+describe( 'POST /companies/new', () => {
     it( 'Merge a company that not exists trigger errors', ( done ) => {
         require( '../server/app' )
             .then( ( app ) => {
                 request( app )
-                    .post( '/companies' )
+                    .post( '/companies/new' )
                     .send( {
                         name: 'Faceblock',
                         zip: '15648',
@@ -20,7 +20,7 @@ describe( 'POST /companies', () => {
         require( '../server/app' )
             .then( ( app ) => {
                 request( app )
-                    .post( '/companies' )
+                    .post( '/companies/new' )
                     .send( {
                         name: 'Faceblock',
                         zip: '15648',
@@ -34,7 +34,7 @@ describe( 'POST /companies', () => {
         require( '../server/app' )
             .then( ( app ) => {
                 request( app )
-                    .post( '/companies' )
+                    .post( '/companies/new' )
                     .send( {
                         name: 'Faceblock',
                         zip: '15648',
@@ -48,7 +48,22 @@ describe( 'POST /companies', () => {
         require( '../server/app' )
             .then( ( app ) => {
                 request( app )
-                    .post( '/companies' )
+                    .post( '/companies/new' )
+                    .send( {
+                        name: 'Facebook',
+                        zip: '15648',
+                        format: 'import',
+                        website: 'https://www.facebook.com',
+                    } )
+                    .expect( 200, { status: 'OK', message: 'Done!' }, done );
+            } );
+    } );
+
+    it( 'Information merged successfully', ( done ) => {
+        require( '../server/app' )
+            .then( ( app ) => {
+                request( app )
+                    .post( '/companies/new' )
                     .send( {
                         name: 'Facebook',
                         zip: '15648',
@@ -63,7 +78,7 @@ describe( 'POST /companies', () => {
         require( '../server/app' )
             .then( ( app ) => {
                 request( app )
-                    .post( '/companies' )
+                    .post( '/companies/new' )
                     .send( {
                         name: 'Face',
                         zip: '15648',

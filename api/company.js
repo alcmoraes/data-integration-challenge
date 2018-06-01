@@ -47,8 +47,18 @@ module.exports = ( server ) => {
          *         enum: [ "merge", "import" ]
          *         description: "Defines the import strategy"
          *         defaultValue: "merge"
-         *     required:
-         *       - name
+         *   CompanyFind:
+         *     id: CompanyFind
+         *     type: object
+         *     properties:
+         *       name:
+         *         type: String
+         *         defaultValue: "Face"
+         *         description: "The company you would like to search. Works if you have only the first name (e.g.: `Melanie` for `Melanie & Brothers Co.`)"
+         *       zip:
+         *         type: String
+         *         defaultValue: "90776"
+         *         description: "The zipcode of the company you're looking for"
          */
 
         /**
@@ -112,7 +122,7 @@ module.exports = ( server ) => {
 
         /**
          * @swagger
-         * path: /companies
+         * path: /companies/new
          * operations:
          *   -  httpMethod: POST
          *      summary: Import from form
@@ -139,7 +149,7 @@ module.exports = ( server ) => {
         */
         server.post( {
             name: 'create_company',
-            path: '/companies',
+            path: '/companies/new',
             version: '1.0.0',
         },
         async ( req, res, next ) => {
@@ -150,6 +160,54 @@ module.exports = ( server ) => {
                 await importer.loadDatabase();
                 await importer.importCompany( _.omit( req.body, 'format' ), true );
                 return res.send( { status: 'OK', message: 'Done!' } );
+            }
+            catch( ERR ){
+                debug( ERR );
+                return res.send( ERR );
+            }
+        } );
+
+        /**
+         * @swagger
+         * path: /companies
+         * operations:
+         *   -  httpMethod: POST
+         *      summary: Finds a company
+         *      notes: Creates a new company or merge it with an existent one.
+         *      operationId: "create_company"
+         *      responseClass: String
+         *      nickname: create_company
+         *      produces:
+         *        - application/json
+         *      consumes:
+         *        - application/json
+         *      responses:
+         *        200:
+         *          description: "Success"
+         *          schema:
+         *            $ref: "#/definitions/uploadResponse"
+         *      parameters:
+         *        - name: company
+         *          in: formData
+         *          description: The company object to merge
+         *          required: true
+         *          paramType: body
+         *          type: CompanyFind
+        */
+        server.post( {
+            name: 'find_company',
+            path: '/companies',
+            version: '1.0.0',
+        },
+        async ( req, res, next ) => {
+            try{
+                let matches;
+                await Joi.validate( req.body, schema );
+                matches = await server.DB.models.Company.find( {
+                    name: { $regex: `^${req.body.name}\s?.*`, $options : 'i' },
+                    zip: req.body.zip,
+                } );
+                return res.send( { status: 'OK', data: matches } );
             }
             catch( ERR ){
                 debug( ERR );
