@@ -1,5 +1,6 @@
 const restify = require( 'restify' );
 const errors = require( 'restify-errors' );
+const qs = require( 'qs' );
 const swagger = require( 'swagger-restify' );
 const debug = require( 'debug' )( 'API:SERVER:APP' );
 
@@ -11,12 +12,12 @@ module.exports = new Promise( async ( resolve, reject ) => {
           
         server.DB = await require( '../services/database' );
 
-        server.use( restify.bodyParser() );
+        server.pre( restify.pre.sanitizePath() );
         server.use( restify.acceptParser( server.acceptable ) );
-        server.use( restify.authorizationParser() );
-        server.use( restify.dateParser() );
         server.use( restify.queryParser() );
-        server.use( restify.conditionalRequest() );
+        server.use( restify.bodyParser() );
+
+        server.use( restify.fullResponse() );
 
         server.on( 'MethodNotAllowed', ( req, res ) => {
             if( req.method.toLowerCase() === 'options' ){
@@ -42,6 +43,11 @@ module.exports = new Promise( async ( resolve, reject ) => {
                 return res.send( 204 );
             }
             return res.send( new errors.MethodNotAllowedError() );
+        } );
+
+        server.use( ( req, res, next ) => {
+            req.body = qs.parse( req.body );
+            next();
         } );
 
         swagger.init( server, {
