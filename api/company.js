@@ -1,13 +1,16 @@
 const errors = require( 'restify-errors' );
 const debug = require( 'debug' )( 'API:COMPANY' );
+const _ = require( 'lodash' );
 const fs = require( 'fs-extra' );
 const path = require( 'path' );
+const Importer = require( '../services/importer' );
 const Joi = require( 'joi' );
 
 const schema = Joi.object().keys( {
-    'name': Joi.string().max( 255 ),
-    'zip': Joi.string().min( 5 ).max( 5 ),
-    'website': Joi.string().max( 255 ).optional(),
+    'name': Joi.string().max( 255 ).required().regex( /^([ \u00c0-\u01ff0-9a-zA-Z\&,\.'\-])+$/ ),
+    'zip': Joi.string().min( 5 ).max( 5 ).required().regex( /[0-9]{5}/ ),
+    'website': Joi.string().max( 255 ).optional().regex( /(?:(?:https?|ftp):\/\/)?[\w/\-?=%.]+\.[\w/\-?=%.]+/ ),
+    'format': Joi.string().regex( /^(merge|import)$/ ).optional(),
 } );
 
 /**
@@ -29,57 +32,32 @@ module.exports = ( server ) => {
          *     properties:
          *       name:
          *         type: String
+         *         defaultValue: "Fakeblock"
+         *         description: "The company name"
          *       zip:
          *         type: String
+         *         defaultValue: "90776"
+         *         description: "The company zipcode"
          *       website:
          *         type: String
+         *         description: "The company website"
+         *         defaultValue: "https://fakeblock.com.br"
+         *       format:
+         *         type: String
+         *         enum: [ "merge", "import" ]
+         *         description: "Defines the import strategy"
+         *         defaultValue: "merge"
          *     required:
          *       - name
-         *     example:
-         *       name: "Fakeblock"
-         *       zip: "90776"
-         *       website: "https://fakeblock.com.br"
          */
-
-        /**
-          * @swagger
-          * definitions:
-          *   uploadResponse:
-          *     type: "object"
-          *     description: "Upload Object Response"
-          *     properties:
-          *       status:
-          *         type: String
-          *         description: "OK or ERROR"
-          *         default: "OK"
-          *       message:
-          *         type: String
-          *         description: "A descriptive message of the action taken"
-          *         default: "Uploaded successfully!"
-          *   Company:
-          *     properties:
-          *       id:
-          *         type: String
-          *         readOnly: true
-          *       name:
-          *         type: String
-          *       zip:
-          *         type: String
-          *       website:
-          *         type: String
-          *     required:
-          *       - name
-          *       - zip
-          *       - website
-          */
 
         /**
          * @swagger
          * path: /companies/upload
          * operations:
          *   -  httpMethod: POST
-         *      summary: Upload companies CSV
-         *      notes: It uses the companies from the CSV to merge matching companies on the database
+         *      summary: Import from CSV
+         *      notes: It uses the companies from the CSV to merge or import it to the database.
          *      operationId: "upload_companies"
          *      responseClass: String
          *      nickname: upload_companies
@@ -97,8 +75,16 @@ module.exports = ( server ) => {
          *          in: formData
          *          description: The CSV file
          *          required: true
-         *          paramType: body
+         *          paramType: file
          *          type: file
+         *        - name: format
+         *          in: formData
+         *          description: "If `merge` it will discard companies not found on database."
+         *          required: false
+         *          defaultValue: "merge"
+         *          paramType: form
+         *          enum: [ "merge", "import" ]
+         *          type: string
         */
         server.post( {
             name: 'upload_companies',
@@ -107,7 +93,6 @@ module.exports = ( server ) => {
         },
         async ( req, res, next ) => {
             let uploadedCSV;
-            let company;
             try{
                 uploadedCSV = req.files.file;
                 if( uploadedCSV.type !== 'text/csv' ) throw new errors.InvalidContentError( 'CSV files only' );
@@ -122,11 +107,11 @@ module.exports = ( server ) => {
 
         /**
          * @swagger
-         * path: /companies
+         * path: /companies/new
          * operations:
          *   -  httpMethod: POST
-         *      summary: Merge company
-         *      notes: It uses `name` and `zip` parameter to find a matching company in the database and merge the `website` data in it
+         *      summary: Import from form
+         *      notes: Creates a new company or merge it with an existent one.
          *      operationId: "create_company"
          *      responseClass: String
          *      nickname: create_company
@@ -146,8 +131,6 @@ module.exports = ( server ) => {
          *          required: true
          *          paramType: body
          *          type: Company
-         *          schema:
-         *            $ref: "#/definitions/Company"
         */
         server.post( {
             name: 'create_company',
@@ -156,20 +139,12 @@ module.exports = ( server ) => {
         },
         async ( req, res, next ) => {
             try{
-                let conditions;
-                let matchingCompanies;
+                if( !req.body.format ) req.body.format = 'merge'; // Defaults to merge
                 await Joi.validate( req.body, schema );
-                conditions = {
-                    name: {
-                        $regex: `^${req.body.name}\s?.*`,
-                        $options : 'i',
-                    },
-                };
-                if( req.body.zip ) conditions[ 'zip' ] = req.body.zip;
-                matchingCompanies = await server.DB.models.Company.find( conditions );
-                console.log( matchingCompanies );
-                //    { $set: { website: c.website } } );
-                return res.send( { status: 'OK', message: 'Company merged with success' } );
+                let importer = new Importer( { merge: req.body.format === 'merge' } );
+                await importer.loadRequirements();
+                await importer.importCompany( _.omit( req.body, 'format' ), true );
+                return res.send( { status: 'OK', message: 'Done!' } );
             }
             catch( ERR ){
                 debug( ERR );
