@@ -29,6 +29,18 @@ module.exports = class Importer {
     }
 
     /**
+     * Override the already set options
+     *
+     * @param {Object} options
+     * @return {boolean}
+     */
+    setOptions( options ){
+        this.options = _.merge( this.options, options );
+        this.ensureOptions();
+        return true;
+    }
+
+    /**
    * Debug data
    * @param {string} message
    * @return {boolean}
@@ -84,9 +96,12 @@ module.exports = class Importer {
             let data;
             try{
                 if( !file ) throw new Error( 'No file specified to read!' );
-                this.csvString = await fs.readFile( file, { encoding: 'utf-8' } );
+                if( file !== this.options.file ){
+                    this.setOptions( { file: file } );
+                }
+                this.csvString = await fs.readFile( this.options.file, { encoding: 'utf-8' } );
                 data = CSV.parse( this.csvString );
-                if( !data.length ) throw new Error( 'Empty csv' );
+                if( !data.length || data[ 0 ][ 0 ] === '' ) throw new Error( 'Empty csv' );
                 
                 if( _.isEmpty( this.options.columns ) ){
                     this.csvData = data;
@@ -139,6 +154,7 @@ module.exports = class Importer {
         return new Promise( async ( resolve, reject ) => {
             try{
                 this.db = await require( './database' );
+                this.verbose( 'Database loaded' );
                 resolve();
             }
             catch( ERR ){

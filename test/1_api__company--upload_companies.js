@@ -8,6 +8,7 @@ describe( 'POST /companies/upload', () => {
                 request( app )
                     .post( '/companies/upload' )
                     .attach( 'file', path.join( __dirname, '..', 'tasks', 'initial_data', 'q1_catalog.csv' ) )
+                    .field( 'format', 'import' )
                     .expect( 200, { status: 'OK', message: 'CSV added to queue' }, done );
             } );
     } );
@@ -18,6 +19,7 @@ describe( 'POST /companies/upload', () => {
                 request( app )
                     .post( '/companies/upload' )
                     .attach( 'file', path.join( __dirname, 'mock', 'jondoe.png' ) )
+                    .field( 'format', 'import' )
                     .expect( 400, { code: 'InvalidContent', message: 'CSV files only' }, done );
             } );
     } );
@@ -29,6 +31,17 @@ describe( 'POST /companies/upload', () => {
                     .post( '/companies/upload' )
                     .attach( 'file', path.join( __dirname, '..', 'tasks', 'initial_data', 'q1_catalog.csv' ) )
                     .field( 'format', 'import' )
+                    .expect( 200, { status: 'OK', message: 'CSV added to queue' }, done );
+            } );
+    } );
+
+    it( 'Uploads a CSV with `merge` strategy without errors', ( done ) => {
+        require( '../server/app' )
+            .then( ( app ) => {
+                request( app )
+                    .post( '/companies/upload' )
+                    .attach( 'file', path.join( __dirname, '..', 'tasks', 'initial_data', 'q2_clientData.csv' ) )
+                    .field( 'format', 'merge' )
                     .expect( 200, { status: 'OK', message: 'CSV added to queue' }, done );
             } );
     } );
