@@ -24,7 +24,7 @@ class Utils {
                 } );
             }
             THREAD.on( 'close', ( code ) => {
-                return code ? resolve() : reject();
+                return code === 0 ? resolve() : reject();
             } );
         } );
     }

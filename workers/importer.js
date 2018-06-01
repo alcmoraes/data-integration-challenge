@@ -1,69 +1,123 @@
 #!/bin/node
 
 const debug = require( 'debug' )( 'API:WORKERS:IMPORTER' );
-const spawn = require( 'child_process' ).spawn;
 const fs = require( 'fs-extra' );
+const utils = require( '../services/utils' );
 const schedule = require( 'node-schedule' );
-const _ = require( 'lodash' );
 const path = require( 'path' );
 
-const lockPath = path.join( __dirname, 'lock' );
-const uploadPaths = path.join( __dirname, '..', 'csv', 'uploaded' );
-const importedPaths = path.join( __dirname, '..', 'csv', 'imported' );
-const failedPaths = path.join( __dirname, '..', 'csv', 'failed' );
+/**
+ * A utility class to manage the CSV's
+ * uploaded via api
+ */
+class ImporterWorker {
+    /**
+     * Constructor
+     */
+    constructor(){
+        this.nextCSV = false;
 
-let start = async () => {
-    debug( 'Importer worker running each 15s' );
-    if( await fs.pathExists( lockPath ) ) await fs.unlink( lockPath );
-    schedule.scheduleJob( '*/15 * * * * *', async () => {
-        try{
+        this.lockPath = path.join( __dirname, 'lock' );
+        this.uploadPaths = path.join( __dirname, '..', 'csv', 'uploaded' );
+        this.importedPaths = path.join( __dirname, '..', 'csv', 'imported' );
+        this.failedPaths = path.join( __dirname, '..', 'csv', 'failed' );
+
+        this.unlock();
+    }
+
+    /**
+     * Writes the lockfile
+     * @return {Promise}
+     */
+    lock(){
+        return fs.writeJson( this.lockPath, {} );
+    }
+
+    /**
+     * If is locked. Unlock it.
+     * @return {void}
+     */
+    async unlock(){
+        if( await this.isLocked() ) await fs.unlink( this.lockPath );
+        return;
+    }
+
+    /**
+     * Check if the lockfile exists
+     * @return {Promise<boolean>}
+     */
+    isLocked(){
+        return fs.pathExists( this.lockPath );
+    }
+
+    /**
+     * Gets the next CSV from "uploaded" folder queue
+     * @return {Promise<String>} The path for the next CSV to import
+     */
+    selectNextCSV(){
+        return new Promise( async ( resolve, reject ) => {
             let uploadedCSVS;
             let csvToImport;
+            try{
+                uploadedCSVS = await fs.readdir( this.uploadPaths );
+                csvToImport = uploadedCSVS
+                    .filter( ( f ) => f.indexOf( '.csv' ) > -1 )
+                    .map( ( f ) => path.join( this.uploadPaths, f ) )
+                    .sort( ( a, b ) => fs.statSync( a ).ctime - fs.statSync( b ).ctime );
+                this.nextCSV = csvToImport.shift() || false;
+                resolve();
+            }
+            catch( ERR ){
+                reject( ERR );
+            }
+        } );
+    }
+
+    /**
+     * Gets the next CSV on queue and
+     * import it to the database
+     * @return {Promise}
+     */
+    importNextCSV(){
+        return new Promise( async ( resolve, reject ) => {
             let start;
-            if( await fs.pathExists( lockPath ) ) throw new Error( 'Importer currently running. Abort.' );
-            uploadedCSVS = await fs.readdir( uploadPaths );
-            
-            csvToImport = uploadedCSVS
-                .filter( ( f ) => f.indexOf( '.csv' ) > -1 )
-                .map( ( f ) => path.join( uploadPaths, f ) )
-                .sort( ( a, b ) => fs.statSync( a ).ctime - fs.statSync( b ).ctime );
-            
-            if( !csvToImport.length ) throw new Error( 'Nothing to import.' );
-            
-            await fs.writeJson( lockPath, {} );
-            
-            csvToImport = csvToImport[ 0 ];
+            try{
+                if( !this.nextCSV ) throw new Error( 'Nothing to import' );
+                debug( `Import of ${this.nextCSV.split( '/' ).pop()} started!` );
+                await this.lock();
+                start = Date.now();
+                await utils.spawn( 'node', [
+                    'tasks/import_from_file.js',
+                    'merge=true',
+                    `file=${this.nextCSV}`,
+                ] );
+                await fs.move( this.nextCSV, path.join( this.importedPaths, `${start}.csv` ) );
+                debug( `Well, that scalated quickly! It took me ${Math.floor( ( Date.now() - start )/1000 )}s.` );
+                await this.unlock();
+                resolve();
+            }
+            catch( ERR ){
+                if( this.nextCSV ) await fs.move( this.nextCSV, path.join( this.failedPaths, `${Date.now()}.csv` ) );
+                reject( ERR );
+            }
+        } );
+    }
+}
 
-            debug( `Importing ${csvToImport}...` );
-            start = Date.now();
-
-            THREAD = spawn( 'node', [
-                `${path.join( __dirname, '..', 'tasks', 'import_from_file.js' )}`,
-                'merge=true',
-                `file=${csvToImport}`,
-            ] );
-  
-            THREAD.stdout.on( 'data', ( data ) => {
-                _.forEach( data.toString().split( /(\r?\n)/g ), ( d ) => console.log( d ) );
-            } );
-  
-            THREAD.on( 'close', async ( code ) => {
-                if( code !== 0 ){
-                    await fs.move( csvToImport, path.join( failedPaths, `${Date.now()}.csv` ) );
-                    throw new Error( `Failed to import ${csvToImport}` );
-                }
-                else{
-                    await fs.move( csvToImport, path.join( importedPaths, `${Date.now()}.csv` ) );
-                    if( await fs.pathExists( lockPath ) ) await fs.unlink( lockPath );
-                    debug( `DONE! ${Math.floor( ( Date.now() - start )/1000 )}s` );
-                }
-            } );
+( () => {
+    debug( 'Importer worker running each 15s' );
+    schedule.scheduleJob( '*/15 * * * * *', async () => {
+        let worker;
+        worker = new ImporterWorker();
+        try{
+            await worker.selectNextCSV();
+            await worker.importNextCSV();
+            return true;
         }
         catch( ERR ){
             debug( ERR.message );
-            if( await fs.pathExists( lockPath ) ) await fs.unlink( lockPath );
+            await worker.unlock();
+            return false;
         }
     } );
-};
-
-start();
+} )();
