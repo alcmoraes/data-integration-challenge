@@ -8,6 +8,16 @@
 2. Docker Compose
 3. Ports 3005, 8081 and 8082
 
+## Features
+
+It will build a mongo and restify docker containers, where the restify container `automatically starts`
+two proccess in background
+
+1. The API client on port **3005**
+2. A `node-schedule` cronjob that runs each 15 seconds and takes the last file from `csv/uploaded` folder to import into the database.
+
+CSV's uploaded via API are not imported right away. They are stored in `csv/uploaded` folder so the `node-schedule` crobjob can import it in another thread.
+
 ## Usage
 
 Use `make` to show the following commands in your terminal
