@@ -88,7 +88,7 @@ class ImporterWorker {
                 start = Date.now();
                 await utils.spawn( 'node', [
                     'tasks/import_from_file.js',
-                    'merge=true',
+                    `merge=${this.nextCSV.indexOf( '@merge-' ) > -1 ? 'true' : 'false'}`,
                     `file=${this.nextCSV}`,
                 ] );
                 await fs.move( this.nextCSV, path.join( this.importedPaths, `${start}.csv` ) );

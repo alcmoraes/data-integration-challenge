@@ -34,15 +34,28 @@ process.argv.splice( 2 ).map( ( d ) => {
 ( async () => {
     try{
         if( !args.file ) throw new Error( 'Missing CSV file argument!' );
+        
+        args.columns = { // The column matching pattern for a CSV of companies
+            name: {
+                required: true,
+                regex: /^([ \u00c0-\u01ffa-zA-Z\&,\.'\-])+$/,
+            },
+            zip: { required: true, regex: /[0-9]{5}/ },
+            website: {
+                required: args.merge || false,
+                regex: /(?:(?:https?|ftp):\/\/)?[\w/\-?=%.]+\.[\w/\-?=%.]+/,
+            },
+        };
+
         let importer = new Importer( args );
-        await importer.loadRequirements();
-        await importer.organizeCSV();
-        await importer.importCompany( importer.csvData[ 0 ] );
+        await importer.loadDatabase();
+        await importer.readCsv();
         await Promise.all( importer.csvData.map( ( c ) => importer.importCompany( c ) ) );
         console.log( 'DONE!' );
         process.exit( 0 );
     }
     catch( ERR ){
+        console.log( ERR );
         console.log( 'Task exited with errors' );
         process.exit( 1 );
     }

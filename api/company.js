@@ -93,10 +93,15 @@ module.exports = ( server ) => {
         },
         async ( req, res, next ) => {
             let uploadedCSV;
+            let csvName = `@merge-${Date.now()}`;
             try{
                 uploadedCSV = req.files.file;
                 if( uploadedCSV.type !== 'text/csv' ) throw new errors.InvalidContentError( 'CSV files only' );
-                await fs.move( uploadedCSV.path, path.join( __dirname, '..', 'csv', 'uploaded', `${Date.now()}.csv` ) );
+                if( req.body.format ){
+                    await Joi.validate( req.body.format, Joi.string().regex( /^(merge|import)$/ ).optional() );
+                    csvName = req.body.format !== 'merge' ? `@${req.body.format}-${Date.now()}` : csvName;
+                }
+                await fs.move( uploadedCSV.path, path.join( __dirname, '..', 'csv', 'uploaded', `${csvName}.csv` ) );
                 return res.send( { status: 'OK', message: 'CSV added to queue' } );
             }
             catch( ERR ){
@@ -107,7 +112,7 @@ module.exports = ( server ) => {
 
         /**
          * @swagger
-         * path: /companies/new
+         * path: /companies
          * operations:
          *   -  httpMethod: POST
          *      summary: Import from form
@@ -134,7 +139,7 @@ module.exports = ( server ) => {
         */
         server.post( {
             name: 'create_company',
-            path: '/companies/new',
+            path: '/companies',
             version: '1.0.0',
         },
         async ( req, res, next ) => {
@@ -142,7 +147,7 @@ module.exports = ( server ) => {
                 if( !req.body.format ) req.body.format = 'merge'; // Defaults to merge
                 await Joi.validate( req.body, schema );
                 let importer = new Importer( { merge: req.body.format === 'merge' } );
-                await importer.loadRequirements();
+                await importer.loadDatabase();
                 await importer.importCompany( _.omit( req.body, 'format' ), true );
                 return res.send( { status: 'OK', message: 'Done!' } );
             }
