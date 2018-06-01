@@ -17,7 +17,7 @@ then
 fi
 # Building compose
 echo "Building project and turning compose on. This may take a while..."
-docker-compose up -d --build &> /dev/null
+docker-compose up -d --build
 echo "Done!"
 
 echo "Migrating initial data..."
