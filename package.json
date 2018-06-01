@@ -12,7 +12,7 @@
     "restart": "pm2 stop all && pm2 start pm2.json && pm2 logs api",
     "coverage": "http-server -p 8081 coverage",
     "swagger": "http-server -p 8082 swagger",
-    "test": "NODE_ENV=test nyc --reporter=html mocha --exit"
+    "test": "DEBUG= NODE_ENV=test nyc --reporter=html mocha -R spec --exit"
   },
   "devDependencies": {
     "assert": "^1.4.1",
