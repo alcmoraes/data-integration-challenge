@@ -1,4 +1,4 @@
-FROM node:wheezy
+FROM node:carbon
 
 RUN npm i -g pm2 yarn http-server --progress=false --loglevel=error
 

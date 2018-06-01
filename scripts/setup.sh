@@ -16,7 +16,7 @@ then
   echo "Done!"
 fi
 # Building compose
-echo "Turning compose on..."
+echo "Building project and turning compose on. This may take a while..."
 docker-compose up -d --build &> /dev/null
 echo "Done!"
 
