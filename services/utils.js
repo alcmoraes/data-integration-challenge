@@ -55,16 +55,6 @@ class Utils {
 
                 guessColumnPositions();
 
-                data.filter( ( company ) => {
-                    let should = true;
-                    columnOrder.map( ( o, i ) => {
-                        if( ( !company[ o.pos ] && o.required ) ||
-                            ( !company[ o.pos ].match( o.regex ) && o.required )
-                        ) should = false;
-                    } );
-                    return should;
-                } );
-
                 resolve( data.reduce( ( output, company ) => {
                     let c = {};
                     columnOrder.map( ( o, i ) => {
