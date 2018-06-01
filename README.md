@@ -1,6 +1,8 @@
 # Data Integration Challenge
 
-**Obs: That's a technical challenge created by @alcmoraes to @neoway**
+[![Code Climate](https://codeclimate.com/github/alcmoraes/data-integration-challenge/badges/gpa.svg)](https://codeclimate.com/github/alcmoraes/data-integration-challenge)
+
+**Obs: That's a technical challenge created by @alcmoraes to Neoway**
 
 ## Requirements
 
