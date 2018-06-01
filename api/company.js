@@ -1,12 +1,13 @@
 const errors = require( 'restify-errors' );
 const debug = require( 'debug' )( 'API:COMPANY' );
+const fs = require( 'fs-extra' );
+const path = require( 'path' );
 const Joi = require( 'joi' );
-const utils = require( '../services/utils' );
 
 const schema = Joi.object().keys( {
     'name': Joi.string().max( 255 ),
     'zip': Joi.string().min( 5 ).max( 5 ),
-    'website': Joi.string().max( 255 ).allow( null ).optional(),
+    'website': Joi.string().max( 255 ).optional(),
 } );
 
 /**
@@ -110,33 +111,11 @@ module.exports = ( server ) => {
             try{
                 uploadedCSV = req.files.file;
                 if( uploadedCSV.type !== 'text/csv' ) throw new errors.InvalidContentError( 'CSV files only' );
-                let uploadedData = await utils.readFile( uploadedCSV.path, { encoding: 'utf-8' } );
-                let csvCompanies = await utils.readCsv( uploadedData, { delimiter: ';' } );
-                if( !csvCompanies.length ) throw new errors.InvalidContentError( 'Invalid or empty CSV' );
-                csvCompanies = utils.formatCompaniesFromCSV( csvCompanies );
-                /**
-                 * Picks the next company from the array
-                 * and store it into the database
-                 *
-                 * @return { void }
-                 */
-                function storeNextCompany(){
-                    return new Promise( async ( resolve, reject ) => {
-                        let c;
-                        if( !csvCompanies.length ) return resolve( res.send( { status: 'OK', message: 'Uploaded successfully!' } ) );
-                        c = csvCompanies.shift();
-                        let company = await server.DB.models.Company.findOneAndUpdate( {
-                            name: { $regex: `^${c.name}\s?.*`, $options : 'i' },
-                            zip: c.zip,
-                        },
-                        { $set: { website: c.website } } );
-                        return await storeNextCompany();
-                    } );
-                }
-
-                return await storeNextCompany();
+                await fs.move( uploadedCSV.path, path.join( __dirname, '..', 'csv', 'uploaded', `${Date.now()}.csv` ) );
+                return res.send( { status: 'OK', message: 'CSV added to queue' } );
             }
             catch( ERR ){
+                debug( ERR );
                 return res.send( ERR );
             }
         } );
@@ -172,11 +151,30 @@ module.exports = ( server ) => {
         */
         server.post( {
             name: 'create_company',
-            path: '/companies/upload',
+            path: '/companies/new',
             version: '1.0.0',
         },
         async ( req, res, next ) => {
-            
+            try{
+                let conditions;
+                let matchingCompanies;
+                await Joi.validate( req.body, schema );
+                conditions = {
+                    name: {
+                        $regex: `^${req.body.name}\s?.*`,
+                        $options : 'i',
+                    },
+                };
+                if( req.body.zip ) conditions[ 'zip' ] = req.body.zip;
+                matchingCompanies = await server.DB.models.Company.find( conditions );
+                console.log( matchingCompanies );
+                //    { $set: { website: c.website } } );
+                return res.send( { status: 'OK', message: 'Company merged with success' } );
+            }
+            catch( ERR ){
+                debug( ERR );
+                return res.send( ERR );
+            }
         } );
 
         resolve( server );

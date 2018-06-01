@@ -1,6 +1,5 @@
 const _ = require( 'lodash' );
-const fs = require( 'fs' );
-const parseCSV = require( 'csv-parse' );
+const CSV = require( 'csv-string' );
 
 /**
  * A really tiny utility class.
@@ -8,47 +7,79 @@ const parseCSV = require( 'csv-parse' );
 class Utils {
     /**
      * Parses a CSV from a given CSV File data
-     * @param {string} csvData
-     * @param {Object} options
-     * @return { Promise<Array<Array>> }
+     * @param {string} csvString
+     * @param {Object} columns a Regular expression collection to match the CSV
+     * @return { Promise } Arra<Array> or Array<Object>, depending on the columns parameter
      */
-    readCsv( csvData, options ){
+    readCsv( csvString, columns = {} ){
         return new Promise( ( resolve, reject ) => {
-            parseCSV( csvData, options, ( err, data ) => {
-                if( err ) return reject( err );
-                return resolve( data );
-            } );
-        } );
-    }
-    /**
-     * Reads a file from a given file path
-     * @param {string} filepath
-     * @param {Object} options
-     * @return { string }
-     */
-    readFile( filepath, options ){
-        return new Promise( ( resolve, reject ) => {
-            fs.readFile( filepath, options, ( err, data ) => {
-                if( err ) return reject( err );
-                return resolve( data );
-            } );
-        } );
-    }
-    /**
-     * Use it to format companies got from a CSV file
-     *
-     * @param {Array<Object>} data
-     * @return {Array<Object>}
-     */
-    formatCompaniesFromCSV( data ){
-        return data.filter( ( d ) => {
-            return d[ 0 ] && d[ 0 ].length && d[ 1 ] && d[ 1 ].length === 5;
-        } ).map( ( c ) => {
-            return{
-                name: _.startCase( c[ 0 ] ),
-                zip: c[ 1 ],
-                website: c[ 2 ] || null,
-            };
+            let data;
+            let columnOrder = [];
+            try{
+                if( _.isEmpty( columns ) ) throw new Error( '`columns` property cannot be empty!' );
+                data = CSV.parse( csvString );
+                if( !data.length ) throw new Error( 'Empty csv' );
+                /**
+                 * Checks for the first valid row that matches
+                 * the columns specification and stores the position
+                 * of each column.
+                 *
+                 * That way, we can accept CSV's with any formation
+                 * (I hope so)
+                 *
+                 * @return {void}
+                 */
+                let guessColumnPositions = () => {
+                    let entity = data.shift();
+                    _.forEach( columns, ( prop, col ) => {
+                        let match;
+                        let regex = prop.hasOwnProperty( 'regex' ) ? prop.regex : prop;
+                        match = _.find( entity,
+                            ( entry ) => entry.match( regex ) );
+                        if( match ){
+                            columnOrder.push( {
+                                name: col,
+                                required: prop.required,
+                                pos: entity.indexOf( match ),
+                                regex,
+                            } );
+                        }
+                        if( !match && prop.required ){
+                            columnOrder = [];
+                            return false;
+                        }
+                    } );
+                    if( !columnOrder.length ) return guessColumnPositions();
+                    data.unshift( entity );
+                };
+
+                guessColumnPositions();
+
+                data.filter( ( company ) => {
+                    let should = true;
+                    columnOrder.map( ( o, i ) => {
+                        if( ( !company[ o.pos ] && o.required ) ||
+                            ( !company[ o.pos ].match( o.regex ) && o.required )
+                        ) should = false;
+                    } );
+                    return should;
+                } );
+
+                resolve( data.reduce( ( output, company ) => {
+                    let c = {};
+                    columnOrder.map( ( o, i ) => {
+                        if( ( !company[ o.pos ] && o.required ) ||
+                            ( !company[ o.pos ].match( o.regex ) && o.required )
+                        ) return;
+                        c[ o.name ] = company[ o.pos ];
+                    } );
+                    return Object.keys( c ).length === columnOrder.length ?
+                        [ ...output, c ] : output;
+                }, [] ) );
+            }
+            catch( ERR ){
+                reject( ERR );
+            }
         } );
     }
 }

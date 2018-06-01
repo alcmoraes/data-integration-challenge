@@ -11,8 +11,12 @@ module.exports = new Promise( async ( resolve, reject ) => {
           
         server.DB = await require( '../services/database' );
 
-        server.use( restify.fullResponse() );
-        server.use( restify.multipartBodyParser() );
+        server.use( restify.bodyParser() );
+        server.use( restify.acceptParser( server.acceptable ) );
+        server.use( restify.authorizationParser() );
+        server.use( restify.dateParser() );
+        server.use( restify.queryParser() );
+        server.use( restify.conditionalRequest() );
 
         server.on( 'MethodNotAllowed', ( req, res ) => {
             if( req.method.toLowerCase() === 'options' ){
