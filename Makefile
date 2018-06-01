@@ -25,7 +25,6 @@ nyc: ## Runs the Coverage UI on port 8081
 	@echo "Tests coverage running on port 8081"
 
 docs: ## Runs the Swagger Explorer UI on port 8082
-	@docker-compose up -d
 	@docker exec -it yawoen_api bash -c "yarn swagger"
 	@echo "API documentation running on port 8082"
 
