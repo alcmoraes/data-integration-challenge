@@ -35,3 +35,20 @@ First ensure project is running. If not go and start it with `make start`.
 Execute `make check`.
 To see the coverage UI, go for `make nyc`. It will start a server on port 8081.
 
+## Import file via command line
+
+The project have an importer that works via command line:
+
+```
+  docker exec -it yawoen_api bash
+```
+Now you can execute the following command to be given help
+
+```
+  node /var/www/tasks/import_from_file.js help
+```
+![Example output](https://skynet.doisbit.com/n/CO2dQ.png)
+*Example output*
+
+**Obs.: Please be aware that by default this script WILL NOT MERGE the content from the CSV file.**
+For merging source into database instead of creating new entries, remember to use `merge=true` flag.
