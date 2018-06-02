@@ -41,9 +41,7 @@ Use `make` to show the following commands in your terminal
 First ensure project is running. If not go and start it with `make start`.
 Execute `make docs`, this will start server on port 8082.
 
-### For running the api docs outside localhost you need to tweak the code a little bit:
-
-Change the `basePath` parameter on `swagger.init` method inside `server/app.js` file and add where your API will be hosted.
+**For running the api docs outside localhost, remember changing the `host` config parameter on `config/{environment}.json`.**
 
 ```
 swagger.init( server, {
