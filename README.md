@@ -1,6 +1,7 @@
 # Data Integration Challenge
 
 [![Code Climate](https://codeclimate.com/github/alcmoraes/data-integration-challenge/badges/gpa.svg)](https://codeclimate.com/github/alcmoraes/data-integration-challenge)
+[![Travis CI](https://api.travis-ci.org/alcmoraes/data-integration-challenge.svg?branch=master)](https://travis-ci.org/alcmoraes/data-integration-challenge)
 
 **Obs: That's a technical challenge created by @alcmoraes to Neoway**
 
