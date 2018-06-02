@@ -35,6 +35,7 @@ Use `make` to show the following commands in your terminal
 | check     | Run unit tests |
 | nyc       | Serve the Tests Coverage UI on port 8081 |    
 | docs      | Serve the Swagger Explorer UI on port 8082 |
+| coveralls | Send coverage data to coveralls |
 | remove    | Stops and removes the containers from this project |
 
 ## API Documentation (Swagger)
