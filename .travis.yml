@@ -8,7 +8,7 @@ before_install:
   - make setup
 
 install:
-  - make start
+  - docker ps
 
 script:
   - make check
