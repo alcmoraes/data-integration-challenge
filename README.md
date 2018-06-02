@@ -2,6 +2,7 @@
 
 [![Code Climate](https://codeclimate.com/github/alcmoraes/data-integration-challenge/badges/gpa.svg)](https://codeclimate.com/github/alcmoraes/data-integration-challenge)
 [![Travis CI](https://api.travis-ci.org/alcmoraes/data-integration-challenge.svg?branch=master)](https://travis-ci.org/alcmoraes/data-integration-challenge)
+[![Coverage Status](https://coveralls.io/repos/github/alcmoraes/data-integration-challenge/badge.svg?branch=master)](https://coveralls.io/github/alcmoraes/data-integration-challenge?branch=master)
 
 **Obs: That's a technical challenge created by @alcmoraes to Neoway**
 
