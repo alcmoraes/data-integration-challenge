@@ -9,6 +9,7 @@ services:
       - "DEBUG=API:*"
     links:
       - yawoen_mongo
+    privileged: true
     build: .
     ports:
       - 3005:3005
