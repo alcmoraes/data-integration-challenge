@@ -1,0 +1,16 @@
+version: '3'
+services:
+  yawoen_mongo:
+    container_name: yawoen_mongo
+    image: mongo:3.4
+  yawoen_api:
+    container_name: yawoen_api
+    environment:
+      - "DEBUG=API:*"
+    links:
+      - yawoen_mongo
+    build: .
+    ports:
+      - 3005:3005
+      - 8081:8081
+      - 8082:8082

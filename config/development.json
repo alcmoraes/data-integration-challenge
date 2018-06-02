@@ -1,0 +1,3 @@
+{
+    "database": "mongodb://yawoen_mongo:27017/yawoen"
+}
