@@ -176,7 +176,7 @@ this["Handlebars"]["templates"]["main"] = Handlebars.template({"1":function(dept
     + escapeExpression(lambda(((stack1 = (depth0 != null ? depth0.info : depth0)) != null ? stack1.version : stack1), depth0))
     + "\n";
 },"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-  var stack1, helper, functionType="function", helperMissing=helpers.helperMissing, escapeExpression=this.escapeExpression, buffer = "<div id=\"swagger_sidebar\">\n    <div class=\"sticky-nav-placeholder\">\n        <div class=\"sticky-nav\">\n            <div class=\"mobile-nav\">\n                <span class=\"select-label\">API Reference: </span><span data-selected-value></span>\n            </div>\n\n            <p></p><div data-navigator>\n                <div data-resource=\"\" label=\"Tools\">\n                    <div class=\"item\" data-tg-switch=\"\">Swagger resource <span class=\"status\"></span></div>\n                </div>\n                <div id=\"resources_nav\">\n                </div>\n            </div>\n\n            <p class=\"changes-disclaimer\">\n                <span class='info' id='api_info'>\n";
+  var stack1, helper, functionType="function", helperMissing=helpers.helperMissing, escapeExpression=this.escapeExpression, buffer = "<div id=\"swagger_sidebar\">\n    <div class=\"sticky-nav-placeholder\">\n        <div class=\"sticky-nav\">\n            <div class=\"mobile-nav\">\n                <span class=\"select-label\">API Reference: </span><span data-selected-value></span>\n            </div>\n\n            <div class=\"token-generator hide\">\n                <span data-close class=\"icon-budicon-471\"></span>\n                <label for=\"input-api-token\">Url</label>\n                <input type=\"text\" autocorrect=\"off\" class=\"ui-form-control\" id=\"input_baseUrl\"\n                       placeholder=\"http://example.com/api\">\n\n                <div class=\"scope-selector\">\n                    <label for=\"scopes\">Token</label>\n\n                    <div class=\"area controls\">\n                        <input type=\"text\" autocorrect=\"off\" class=\"ui-form-control\" id=\"input_apiKey\"\n                               placeholder=\"Enter api key or token\">\n                    </div>\n\n                    <div class=\"area cta\">\n                        <div data-add-scope id=\"explore\" class=\"btn\"><span class=\"icon-budicon-519\"></span>\n                        </div>\n                    </div>\n                </div>\n\n            </div>\n            <div data-navigator>\n                <div data-resource=\"\" label=\"Tools\">\n                    <div class=\"item\" data-tg-switch=\"\">Swagger resource <span class=\"status\"></span></div>\n                </div>\n                <div id=\"resources_nav\">\n                </div>\n            </div>\n\n            <p class=\"changes-disclaimer\">\n                <span class='info' id='api_info'>\n";
   stack1 = helpers['if'].call(depth0, (depth0 != null ? depth0.info : depth0), {"name":"if","hash":{},"fn":this.program(1, data),"inverse":this.noop,"data":data});
   if (stack1 != null) { buffer += stack1; }
   buffer += "\n                </span>\n\n                <span class='info' id='api_info'>\n";
@@ -233,7 +233,7 @@ this["Handlebars"]["templates"]["operation"] = Handlebars.template({"1":function
     + escapeExpression(((helper = (helper = helpers.parentId || (depth0 != null ? depth0.parentId : depth0)) != null ? helper : helperMissing),(typeof helper === functionType ? helper.call(depth0, {"name":"parentId","hash":{},"data":data}) : helper)))
     + "_"
     + escapeExpression(((helper = (helper = helpers.nickname || (depth0 != null ? depth0.nickname : depth0)) != null ? helper : helperMissing),(typeof helper === functionType ? helper.call(depth0, {"name":"nickname","hash":{},"data":data}) : helper)))
-    + "\">\n                        Response Messages\n                    </h4>\n\n                    <div data-content class=\"responses-wrapper collapse in\" id=\"response-"
+    + "\">\n                        HTTP Status Codes\n                    </h4>\n\n                    <div data-content class=\"responses-wrapper collapse in\" id=\"response-"
     + escapeExpression(((helper = (helper = helpers.parentId || (depth0 != null ? depth0.parentId : depth0)) != null ? helper : helperMissing),(typeof helper === functionType ? helper.call(depth0, {"name":"parentId","hash":{},"data":data}) : helper)))
     + "_"
     + escapeExpression(((helper = (helper = helpers.nickname || (depth0 != null ? depth0.nickname : depth0)) != null ? helper : helperMissing),(typeof helper === functionType ? helper.call(depth0, {"name":"nickname","hash":{},"data":data}) : helper)))
@@ -983,7 +983,6 @@ var SwaggerClient = module.exports = function (url, options) {
   this.modelsArray = [];
   this.resourceCount = 0;
   this.url = null;
-  this.host = null;
   this.useJQuery = false;
 
   if (typeof url !== 'undefined') {
@@ -999,16 +998,12 @@ SwaggerClient.prototype.initialize = function (url, options) {
 
   options = (options || {});
 
-  this.host = window.location.protocol + '//' + window.location.host + '/'
-
   if (typeof url === 'string') {
     this.url = url;
   } else if (typeof url === 'object') {
     options = url;
     this.url = options.url;
   }
-
-  if(options.host) this.host = options.host;
 
   this.swaggerRequestHeaders = options.swaggerRequestHeaders || 'application/json;charset=utf-8,*/*';
   this.defaultSuccessCallback = options.defaultSuccessCallback || null;
@@ -1043,13 +1038,6 @@ SwaggerClient.prototype.initialize = function (url, options) {
   }
 };
 
-SwaggerClient.prototype.replaceHost = function(url) {
-  var parser = document.createElement('a');
-  parser.href = url;
-  parser.host = this.host;
-  return this.host + parser.pathname + parser.hash + parser.search;
-}
-
 SwaggerClient.prototype.build = function (mock) {
   if (this.isBuilt) {
     return this;
@@ -1061,7 +1049,7 @@ SwaggerClient.prototype.build = function (mock) {
 
   var obj = {
     useJQuery: this.useJQuery,
-    url: this.replaceHost(this.url),
+    url: this.url,
     method: 'get',
     headers: {
       accept: this.swaggerRequestHeaders
@@ -1698,8 +1686,8 @@ SuperagentHttpClient.prototype.execute = function (obj) {
 
   r.end(function (err, res) {
     res = res || {
-      status: 0,
-      headers: {error: 'no response from server'}
+      status: 401,
+      headers: {error: 'Not authenticated. The request requires user authentication. Repeat the request with a Authorization header field.'}
     };
     var response = {
       url: obj.url,
@@ -3294,7 +3282,7 @@ var Operation = module.exports = function (parent, scheme, operationId, httpMeth
     var resolvedModel = this.resolveModel(response.schema, definitions);
     var successResponse;
 
-    delete responses[defaultResponseCode];
+    // delete responses[defaultResponseCode];
 
     if (resolvedModel) {
       this.successResponse = {};
@@ -3555,9 +3543,10 @@ Operation.prototype.urlify = function (args) {
     var param = this.parameters[i];
 
     if (typeof args[param.name] !== 'undefined') {
-      if (param.in === 'path' || param.in === 'integer') {
+      if (param.in === 'path') {
         var reg = new RegExp('\{' + param.name + '\}', 'gi');
         var value = args[param.name];
+
         if (Array.isArray(value)) {
           value = this.encodePathCollection(param.collectionFormat, param.name, value);
         } else {
@@ -3778,6 +3767,7 @@ Operation.prototype.execute = function (arg1, arg2, arg3, arg4, parent) {
 
     return;
   }
+
   var allHeaders = this.getHeaderParams(args);
   var contentTypeHeaders = this.setContentTypes(args, opts);
   var headers = {}, attrname;
@@ -20398,28 +20388,30 @@ Request.prototype.end = function(fn){
       : '?' + query;
   }
 
-  // initiate request
-  xhr.open(this.method, this.url, true);
+  if (this.url != null && this.url.indexOf("undefined") === -1) {
+    // initiate request
+    xhr.open(this.method, this.url, true);
 
-  // CORS
-  if (this._withCredentials) xhr.withCredentials = true;
+    // CORS
+    if (this._withCredentials) xhr.withCredentials = true;
 
-  // body
-  if ('GET' != this.method && 'HEAD' != this.method && 'string' != typeof data && !isHost(data)) {
-    // serialize stuff
-    var serialize = request.serialize[this.getHeader('Content-Type')];
-    if (serialize) data = serialize(data);
+    // body
+    if ('GET' != this.method && 'HEAD' != this.method && 'string' != typeof data && !isHost(data)) {
+      // serialize stuff
+      var serialize = request.serialize[this.getHeader('Content-Type')];
+      if (serialize) data = serialize(data);
+    }
+
+    // set header fields
+    for (var field in this.header) {
+      if (null == this.header[field]) continue;
+      xhr.setRequestHeader(field, this.header[field]);
+    }
+
+    // send stuff
+    this.emit('request', this);
+    xhr.send(data);
   }
-
-  // set header fields
-  for (var field in this.header) {
-    if (null == this.header[field]) continue;
-    xhr.setRequestHeader(field, this.header[field]);
-  }
-
-  // send stuff
-  this.emit('request', this);
-  xhr.send(data);
   return this;
 };
 
