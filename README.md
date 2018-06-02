@@ -46,14 +46,6 @@ Execute `make docs`, this will start server on port 8082.
 
 Change the `basePath` parameter on `swagger.init` method inside `server/app.js` file and add where your API will be hosted.
 
-```
-swagger.init( server, {
-    ...
-    basePath: 'http://your-server.com/',
-    ...
-} );
-```
-
 ## Project Coverage (NYC/Mocha)
 
 First ensure project is running. If not go and start it with `make start`.
