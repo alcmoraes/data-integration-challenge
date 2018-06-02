@@ -18,14 +18,14 @@ logs: ## Show the logs for the running project
 	@docker-compose logs -f yawoen_api
 
 check: ## Run project tests
-	@docker exec -it yawoen_api bash -c "yarn test"
+	@docker exec -it yawoen_api bash -c "npm run test"
 
 nyc: ## Runs the Coverage UI on port 8081
-	@docker exec -it yawoen_api bash -c "yarn coverage"
+	@docker exec -it yawoen_api bash -c "npm run coverage"
 	@echo "Tests coverage running on port 8081"
 
 docs: ## Runs the Swagger Explorer UI on port 8082
-	@docker exec -it yawoen_api bash -c "yarn swagger"
+	@docker exec -it yawoen_api bash -c "npm run swagger"
 	@echo "API documentation running on port 8082"
 
 remove: ## Removes project
