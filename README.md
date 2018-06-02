@@ -2,6 +2,7 @@
 
 [![Code Climate](https://codeclimate.com/github/alcmoraes/data-integration-challenge/badges/gpa.svg)](https://codeclimate.com/github/alcmoraes/data-integration-challenge)
 [![Travis CI](https://api.travis-ci.org/alcmoraes/data-integration-challenge.svg?branch=master)](https://travis-ci.org/alcmoraes/data-integration-challenge)
+[![Coverage Status](https://coveralls.io/repos/github/alcmoraes/data-integration-challenge/badge.svg?branch=master)](https://coveralls.io/github/alcmoraes/data-integration-challenge?branch=master)
 
 **Obs: That's a technical challenge created by @alcmoraes to Neoway**
 
@@ -35,6 +36,7 @@ Use `make` to show the following commands in your terminal
 | check     | Run unit tests |
 | nyc       | Serve the Tests Coverage UI on port 8081 |    
 | docs      | Serve the Swagger Explorer UI on port 8082 |
+| coveralls | Send coverage data to coveralls |
 | remove    | Stops and removes the containers from this project |
 
 ## API Documentation (Swagger)

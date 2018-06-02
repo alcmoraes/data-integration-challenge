@@ -28,6 +28,9 @@ docs: ## Runs the Swagger Explorer UI on port 8082
 	@docker exec -it yawoen_api bash -c "npm run swagger"
 	@echo "API documentation running on port 8082"
 
+lcov: ## Output coverage lcov data
+	@docker exec -it yawoen_api bash -c "nyc report --reporter=text-lcov"
+
 remove: ## Removes project
 	@docker-compose stop yawoen_api
 	@docker-compose stop yawoen_mongo

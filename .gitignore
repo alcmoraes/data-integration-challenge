@@ -5,3 +5,4 @@ package-lock.json
 .gitmodules
 csv/**/*.csv
 yarn.lock
+.vscode
