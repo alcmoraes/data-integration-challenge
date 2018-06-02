@@ -53,11 +53,11 @@ module.exports = ( server ) => {
          *     properties:
          *       name:
          *         type: String
-         *         defaultValue: "Face"
+         *         defaultValue: "TOLA"
          *         description: "The company you would like to search. Works if you have only the first name (e.g.: `Melanie` for `Melanie & Brothers Co.`)"
          *       zip:
          *         type: String
-         *         defaultValue: "90776"
+         *         defaultValue: "78229"
          *         description: "The zipcode of the company you're looking for"
          */
 
