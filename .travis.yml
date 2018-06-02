@@ -6,4 +6,4 @@ before_install:
  - npm i -g coveralls nyc
 install: make start
 script: make check
-after_success: make lcov | tail -n +5 | coveralls
+after_success: make lcov | coveralls
