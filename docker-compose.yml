@@ -15,4 +15,3 @@ services:
       - 3005:3005
       - 8081:8081
       - 8082:8082
-    command: ["/usr/local/bin/yarn", "start"]
