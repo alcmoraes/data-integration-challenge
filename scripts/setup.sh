@@ -20,7 +20,8 @@ echo "Building project and turning compose on. This may take a while..."
 docker-compose up -d --build
 echo "Done!"
 
-echo "Migrating initial data..."
+echo "Installing dependencies and migrating initial data"
+docker exec yawoen_api bash -c "yarn"
 docker exec yawoen_api bash -c "node tasks/bootstrap.js"
 echo "Done!"
 
