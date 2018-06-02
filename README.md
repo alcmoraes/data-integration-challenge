@@ -44,14 +44,6 @@ Execute `make docs`, this will start server on port 8082.
 
 **For running the api docs outside localhost, remember changing the `host` config parameter on `config/{environment}.json`.**
 
-```
-swagger.init( server, {
-    ...
-    basePath: 'http://your-server.com/',
-    ...
-} );
-```
-
 ## Project Coverage (NYC/Mocha)
 
 First ensure project is running. If not go and start it with `make start`.
