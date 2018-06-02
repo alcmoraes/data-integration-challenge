@@ -1,6 +1,6 @@
 FROM node:carbon
 
-RUN npm i -g pm2 http-server
+RUN npm i -g pm2 nyc http-server
 
 RUN mkdir -p /var/www
 
