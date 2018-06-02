@@ -25,6 +25,5 @@ docker exec yawoen_api bash -c "yarn"
 docker exec yawoen_api bash -c "node tasks/bootstrap.js"
 echo "Done!"
 
-echo "Turning compose down..."
-docker-compose stop
-echo "Setup done!"
+echo "Api running on port 3005"
+exit 0;
