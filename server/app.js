@@ -1,3 +1,4 @@
+const config = require( 'config' );
 const restify = require( 'restify' );
 const errors = require( 'restify-errors' );
 const swagger = require( 'swagger-restify' );
@@ -47,7 +48,7 @@ module.exports = new Promise( async ( resolve, reject ) => {
             swaggerVersion: '2.0',
             swaggerJSON: '/docs.json',
             swaggerUI: '/',
-            basePath: 'http://localhost:3005/',
+            basePath: config.get( 'host' ),
             info: {
                 version: '1.0',
                 title: 'Data Integration Challenge',
