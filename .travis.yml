@@ -6,4 +6,8 @@ before_install:
  - npm i -g coveralls
 install: make start
 script: make check
-after_success: make lcov | coveralls
+after_success:
+  - make lcov > coverage.lcov
+  - sed -i 's/\/var\/www/\/home\/travis\/build\/alcmoraes\/data-integration-challenge/g' coverage.lcov
+  - cat coverage.lcov | coveralls
+

@@ -6,3 +6,5 @@ package-lock.json
 csv/**/*.csv
 yarn.lock
 .vscode
+coverage.lcov
+outputFile
