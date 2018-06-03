@@ -4,7 +4,9 @@
 [![Travis CI](https://api.travis-ci.org/alcmoraes/data-integration-challenge.svg?branch=master)](https://travis-ci.org/alcmoraes/data-integration-challenge)
 [![Coverage Status](https://coveralls.io/repos/github/alcmoraes/data-integration-challenge/badge.svg?branch=master)](https://coveralls.io/github/alcmoraes/data-integration-challenge?branch=master)
 
-**Obs: That's a technical challenge created by @alcmoraes to Neoway**
+**Obs.: That's a technical challenge created by @alcmoraes to Neoway**
+
+**Obs².: Refer to [go-data-integration-challenge](https://github.com/alcmoraes/go-data-integration-challenge) for the Go version of this challenge**
 
 ## Requirements
 
