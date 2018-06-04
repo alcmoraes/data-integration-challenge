@@ -4,7 +4,7 @@
 [![Travis CI](https://api.travis-ci.org/alcmoraes/data-integration-challenge.svg?branch=master)](https://travis-ci.org/alcmoraes/data-integration-challenge)
 [![Coverage Status](https://coveralls.io/repos/github/alcmoraes/data-integration-challenge/badge.svg?branch=master)](https://coveralls.io/github/alcmoraes/data-integration-challenge?branch=master)
 
-**Obs.: That's a technical challenge created by @alcmoraes to Neoway**
+**Obs.: That's a technical challenge applied by @alcmoraes to Neoway**
 
 **Obs².: Refer to [go-data-integration-challenge](https://github.com/alcmoraes/go-data-integration-challenge) for the Go version of this challenge**
 
@@ -12,14 +12,13 @@
 
 1. Docker
 2. Docker Compose
-3. Ports 3005, 8081 and 8082
+3. Ports `3005`, `8081` and `8082`
 
 ## Features
 
-It will build a mongo and restify docker containers, where the restify container `automatically starts`
-two proccess in background
+It will build a mongo and restify docker containers, where the restify container `automatically starts` two proccess in background
 
-1. The API client on port **3005**
+1. The API client on port `3005`
 2. A `node-schedule` cronjob that runs each 15 seconds and takes the last file from `csv/uploaded` folder to import into the database.
 
 CSV's uploaded via API are not imported right away. They are stored in `csv/uploaded` folder so the `node-schedule` crobjob can import it in another thread.
@@ -32,19 +31,20 @@ Use `make` to show the following commands in your terminal
 |-----------|:---------------------|
 | help      | Gets this table in your terminal | 
 | setup     | Installs the docker containers and import initial data |
-| start     | Starts the project and open API on port 3005 |
+| start     | Starts the project and open API on port `3005` |
 | stop      | Stops the project |
 | logs      | Shows the logs from the project |
 | check     | Run unit tests |
-| nyc       | Serve the Tests Coverage UI on port 8081 |    
-| docs      | Serve the Swagger Explorer UI on port 8082 |
-| coveralls | Send coverage data to coveralls |
+| nyc       | Serve the Tests Coverage UI on port `8081` |    
+| docs      | Serve the Swagger Explorer UI on port `8082` |
+| lcov      | Output coverage lcov data |
 | remove    | Stops and removes the containers from this project |
 
 ## API Documentation (Swagger)
 
-First ensure project is running. If not go and start it with `make start`.
-Execute `make docs`, this will start server on port 8082.
+Ensure the project is running (`make start`).
+
+Execute `make docs`, this will start server on port `8082`.
 
 **For running the api docs outside localhost, remember changing the `host` config parameter on `config/{environment}.json`.**
 
@@ -52,7 +52,7 @@ Execute `make docs`, this will start server on port 8082.
 
 First ensure project is running. If not go and start it with `make start`.
 Execute `make check`.
-To see the coverage UI, go for `make nyc`. It will start a server on port 8081.
+To see the coverage UI, go for `make nyc`. It will start a server on port `8081`.
 
 ## Import file via command line
 
