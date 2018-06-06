@@ -97,7 +97,12 @@ class ImporterWorker {
                 resolve();
             }
             catch( ERR ){
-                if( this.nextCSV ) await fs.move( this.nextCSV, path.join( this.failedPaths, `${Date.now()}.csv` ) );
+                debug(ERR);
+                if( this.nextCSV ) {
+                    debug(`${this.nextCSV} failed to import:`);
+                    await fs.move( this.nextCSV, path.join( this.failedPaths, `${Date.now()}.csv` ) );
+                }
+                await this.unlock();
                 reject( ERR );
             }
         } );
@@ -106,17 +111,17 @@ class ImporterWorker {
 
 ( () => {
     debug( 'Importer worker running each 15s' );
+    let worker;
+    worker = new ImporterWorker();
     schedule.scheduleJob( '*/15 * * * * *', async () => {
-        let worker;
-        worker = new ImporterWorker();
         try{
+            if(await worker.isLocked()) throw new Error('Importer currently running...');
             await worker.selectNextCSV();
             await worker.importNextCSV();
             return true;
         }
         catch( ERR ){
             debug( ERR.message );
-            await worker.unlock();
             return false;
         }
     } );
